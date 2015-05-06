@@ -1,25 +1,19 @@
 package lexer
 
 import (
-	"bufio"
 	"errors"
 	"io"
-	"os"
 	"strconv"
 	"unicode"
 )
 
 type Lexer struct {
 	file   string
-	reader *bufio.Reader
+	reader *Reader
 }
 
-func NewFileLexer(file *os.File) *Lexer {
-	return NewReaderLexer(file.Name(), bufio.NewReader(file))
-}
-
-func NewReaderLexer(file string, reader io.Reader) *Lexer {
-	return &Lexer{file: file, reader: bufio.NewReader(reader)}
+func New(file string, str string) *Lexer {
+	return &Lexer{file: file, reader: NewReader(str)}
 }
 
 func (l *Lexer) Token() (*Token, error) {
@@ -47,32 +41,38 @@ func (l *Lexer) Token() (*Token, error) {
 	case '\'':
 		token = newQuoteToken()
 	case '"':
+		l.reader.UnreadRune()
 		token, err = l.readString()
 	case ';':
+		l.reader.UnreadRune()
 		token, err = l.readComment()
 	default:
-		panic(nil) // Should not be reached.
+		l.reader.UnreadRune()
+		token, err = l.readNumberOrAtom()
 	}
 
 	return token, err
 }
 
-func (l *Lexer) skipWhitespaces() error {
-	for {
-		r, _, err := l.reader.ReadRune()
-		if err != nil {
-			return err
-		} else if !unicode.IsSpace(r) {
-			l.reader.UnreadRune()
-			break
-		}
+func (l *Lexer) readNumberOrAtom() (token *Token, err error) {
+	s, err := l.reader.ReadUntil("()';\" \t\n")
+	if err != nil && err != io.EOF {
+		return nil, err
 	}
 
-	return nil
+	i, err := strconv.Atoi(s)
+	if err == nil {
+		token = newNumberToken(i)
+	} else {
+		token = newAtomToken(s)
+	}
+
+	return token, nil
 }
 
 func (l *Lexer) readString() (*Token, error) {
-	buf := []rune{'"'}
+	buf := []rune{}
+	start := true
 	escaped := false
 
 	for {
@@ -87,7 +87,12 @@ func (l *Lexer) readString() (*Token, error) {
 
 		buf = append(buf, r)
 
-		if escaped {
+		if start {
+			if r != '"' {
+				panic(nil)
+			}
+			start = false
+		} else if escaped {
 			escaped = false
 		} else if r == '\\' {
 			escaped = true
@@ -105,6 +110,15 @@ func (l *Lexer) readString() (*Token, error) {
 }
 
 func (l *Lexer) readComment() (*Token, error) {
+	// Skip initial semicolons.
+	for {
+		r, _, err := l.reader.ReadRune()
+		if err != nil {
+			return nil, err
+		} else if r != ';' {
+			break
+		}
+	}
 	// Skip first space after semicolon.
 	r, _, err := l.reader.ReadRune()
 	if err != nil {
@@ -114,10 +128,24 @@ func (l *Lexer) readComment() (*Token, error) {
 		l.reader.UnreadRune()
 	}
 
-	s, err := l.reader.ReadString('\n')
+	s, err := l.reader.ReadUntil("\n")
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
 
 	return newCommentToken(s), nil
+}
+
+func (l *Lexer) skipWhitespaces() error {
+	for {
+		r, _, err := l.reader.ReadRune()
+		if err != nil {
+			return err
+		} else if !unicode.IsSpace(r) {
+			l.reader.UnreadRune()
+			break
+		}
+	}
+
+	return nil
 }

@@ -2,7 +2,6 @@ package lexer
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 )
 
@@ -20,7 +19,7 @@ func assertToken(t *testing.T, tok *Token, l *Lexer) {
 
 func TestParens(t *testing.T) {
 	text := "(())"
-	l := NewReaderLexer(testFile, strings.NewReader(text))
+	l := New(testFile, text)
 
 	assertToken(t, newLParenToken(), l)
 	assertToken(t, newLParenToken(), l)
@@ -31,7 +30,7 @@ func TestParens(t *testing.T) {
 
 func TestQuote(t *testing.T) {
 	text := "''"
-	l := NewReaderLexer(testFile, strings.NewReader(text))
+	l := New(testFile, text)
 
 	assertToken(t, newQuoteToken(), l)
 	assertToken(t, newQuoteToken(), l)
@@ -40,7 +39,7 @@ func TestQuote(t *testing.T) {
 
 func TestComment(t *testing.T) {
 	text := "'() ; Empty list."
-	l := NewReaderLexer(testFile, strings.NewReader(text))
+	l := New(testFile, text)
 
 	assertToken(t, newQuoteToken(), l)
 	assertToken(t, newLParenToken(), l)
@@ -51,11 +50,32 @@ func TestComment(t *testing.T) {
 
 func TestString(t *testing.T) {
 	text := "(\"foo\" \"bar\\\"baz\")"
-	l := NewReaderLexer(testFile, strings.NewReader(text))
+	l := New(testFile, text)
 
 	assertToken(t, newLParenToken(), l)
 	assertToken(t, newStringToken("foo"), l)
 	assertToken(t, newStringToken("bar\"baz"), l)
 	assertToken(t, newRParenToken(), l)
+	assertToken(t, newEofToken(), l)
+}
+
+func TestNumber(t *testing.T) {
+	text := "-123 123 0"
+	l := New(testFile, text)
+
+	assertToken(t, newNumberToken(-123), l)
+	assertToken(t, newNumberToken(123), l)
+	assertToken(t, newNumberToken(0), l)
+	assertToken(t, newEofToken(), l)
+}
+
+func TestAtom(t *testing.T) {
+	text := "foo 1foo1 -foo -1foo"
+	l := New(testFile, text)
+
+	assertToken(t, newAtomToken("foo"), l)
+	assertToken(t, newAtomToken("1foo1"), l)
+	assertToken(t, newAtomToken("-foo"), l)
+	assertToken(t, newAtomToken("-1foo"), l)
 	assertToken(t, newEofToken(), l)
 }
