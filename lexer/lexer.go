@@ -2,8 +2,10 @@ package lexer
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"os"
+	"strconv"
 	"unicode"
 )
 
@@ -44,21 +46,15 @@ func (l *Lexer) Token() (*Token, error) {
 		token = newRParenToken()
 	case '\'':
 		token = newQuoteToken()
+	case '"':
+		token, err = l.readString()
 	case ';':
 		token, err = l.readComment()
-		if err != nil {
-			return nil, err
-		}
-
-		// case '':
-		// TODO: Number.
-		// case '"':
-		// TODO: Read string.
 	default:
 		panic(nil) // Should not be reached.
 	}
 
-	return token, nil
+	return token, err
 }
 
 func (l *Lexer) skipWhitespaces() error {
@@ -73,6 +69,39 @@ func (l *Lexer) skipWhitespaces() error {
 	}
 
 	return nil
+}
+
+func (l *Lexer) readString() (*Token, error) {
+	buf := []rune{'"'}
+	escaped := false
+
+	for {
+		r, _, err := l.reader.ReadRune()
+		if err != nil {
+			if err == io.EOF {
+				return nil, errors.New("end of file in string constant")
+			} else {
+				return nil, err
+			}
+		}
+
+		buf = append(buf, r)
+
+		if escaped {
+			escaped = false
+		} else if r == '\\' {
+			escaped = true
+		} else if r == '"' {
+			break
+		}
+	}
+
+	str, err := strconv.Unquote(string(buf))
+	if err != nil {
+		return nil, errors.New("invalid string literal")
+	}
+
+	return newStringToken(str), nil
 }
 
 func (l *Lexer) readComment() (*Token, error) {

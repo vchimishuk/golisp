@@ -48,3 +48,14 @@ func TestComment(t *testing.T) {
 	assertToken(t, newCommentToken("Empty list."), l)
 	assertToken(t, newEofToken(), l)
 }
+
+func TestString(t *testing.T) {
+	text := "(\"foo\" \"bar\\\"baz\")"
+	l := NewReaderLexer(testFile, strings.NewReader(text))
+
+	assertToken(t, newLParenToken(), l)
+	assertToken(t, newStringToken("foo"), l)
+	assertToken(t, newStringToken("bar\"baz"), l)
+	assertToken(t, newRParenToken(), l)
+	assertToken(t, newEofToken(), l)
+}
