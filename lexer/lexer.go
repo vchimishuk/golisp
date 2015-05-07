@@ -48,13 +48,13 @@ func (l *Lexer) Token() (*Token, error) {
 		token, err = l.readComment()
 	default:
 		l.reader.UnreadRune()
-		token, err = l.readNumberOrAtom()
+		token, err = l.readNumberOrSymbol()
 	}
 
 	return token, err
 }
 
-func (l *Lexer) readNumberOrAtom() (token *Token, err error) {
+func (l *Lexer) readNumberOrSymbol() (token *Token, err error) {
 	s, err := l.reader.ReadUntil("()';\" \t\n")
 	if err != nil && err != io.EOF {
 		return nil, err
@@ -64,7 +64,7 @@ func (l *Lexer) readNumberOrAtom() (token *Token, err error) {
 	if err == nil {
 		token = newNumberToken(i)
 	} else {
-		token = newAtomToken(s)
+		token = newSymbolToken(s)
 	}
 
 	return token, nil

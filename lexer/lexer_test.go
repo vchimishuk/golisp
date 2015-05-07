@@ -69,13 +69,13 @@ func TestNumber(t *testing.T) {
 	assertToken(t, newEofToken(), l)
 }
 
-func TestAtom(t *testing.T) {
+func TestSymbol(t *testing.T) {
 	text := "foo 1foo1 -foo -1foo"
 	l := New(testFile, text)
 
-	assertToken(t, newAtomToken("foo"), l)
-	assertToken(t, newAtomToken("1foo1"), l)
-	assertToken(t, newAtomToken("-foo"), l)
-	assertToken(t, newAtomToken("-1foo"), l)
+	assertToken(t, newSymbolToken("foo"), l)
+	assertToken(t, newSymbolToken("1foo1"), l)
+	assertToken(t, newSymbolToken("-foo"), l)
+	assertToken(t, newSymbolToken("-1foo"), l)
 	assertToken(t, newEofToken(), l)
 }

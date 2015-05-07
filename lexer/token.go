@@ -9,7 +9,7 @@ import (
 type TokenClass int
 
 const (
-	ClassAtom TokenClass = iota
+	ClassSymbol TokenClass = iota
 	ClassComment
 	ClassEof
 	ClassLParen
@@ -31,8 +31,8 @@ func newToken(class TokenClass, lexeme string, value interface{}) *Token {
 	return &Token{class: class, lexeme: lexeme}
 }
 
-func newAtomToken(atom string) *Token {
-	return newToken(ClassAtom, atom, atom)
+func newSymbolToken(symbol string) *Token {
+	return newToken(ClassSymbol, symbol, symbol)
 }
 
 func newCommentToken(text string) *Token {
