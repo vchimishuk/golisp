@@ -32,6 +32,12 @@ func assertFalse(t *testing.T, b bool) {
 	assertTrue(t, !b)
 }
 
+func assertNilError(t *testing.T, err error) {
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestNumber(t *testing.T) {
 	p := New(lexer.New(testFile, "14 88"))
 
@@ -49,5 +55,42 @@ func TestString(t *testing.T) {
 	assertNode(t, ast.NewStringNode("foo"), p)
 	assertTrue(t, p.HasNext())
 	assertNode(t, ast.NewStringNode("bar"), p)
+	assertFalse(t, p.HasNext())
+}
+
+func TestSymbol(t *testing.T) {
+	p := New(lexer.New(testFile, "foo bar"))
+
+	assertTrue(t, p.HasNext())
+	assertNode(t, ast.NewSymbolNode("foo"), p)
+	assertTrue(t, p.HasNext())
+	assertNode(t, ast.NewSymbolNode("bar"), p)
+	assertFalse(t, p.HasNext())
+}
+
+func TestList(t *testing.T) {
+	text := "(foo 1 (2 3) 4)"
+	p := New(lexer.New(testFile, text))
+
+	assertTrue(t, p.HasNext())
+	node, err := p.Expression()
+	assertNilError(t, err)
+	assertTrue(t, node.String() == text)
+	assertFalse(t, p.HasNext())
+}
+
+func TestMultipleExpressions(t *testing.T) {
+	expr1 := "1"
+	expr2 := "(1 2)"
+	p := New(lexer.New(testFile, expr1+" "+expr2))
+
+	assertTrue(t, p.HasNext())
+	node, err := p.Expression()
+	assertNilError(t, err)
+	assertTrue(t, node.String() == expr1)
+	assertTrue(t, p.HasNext())
+	node, err = p.Expression()
+	assertNilError(t, err)
+	assertTrue(t, node.String() == expr2)
 	assertFalse(t, p.HasNext())
 }

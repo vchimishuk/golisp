@@ -28,6 +28,7 @@ func (r *Reader) ReadUntil(stops string) (string, error) {
 		if err != nil {
 			return string(buf), err
 		} else if strings.ContainsRune(stops, rr) {
+			r.UnreadRune()
 			break
 		}
 

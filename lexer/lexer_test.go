@@ -111,3 +111,18 @@ func TestSymbol(t *testing.T) {
 	assertToken(t, newSymbolToken("-1foo"), l)
 	assertFalse(t, l.HasNext())
 }
+
+func TestNumbersList(t *testing.T) {
+	text := "(1 2)"
+	l := New(testFile, text)
+
+	assertTrue(t, l.HasNext())
+	assertToken(t, newLParenToken(), l)
+	assertTrue(t, l.HasNext())
+	assertToken(t, newNumberToken(1), l)
+	assertTrue(t, l.HasNext())
+	assertToken(t, newNumberToken(2), l)
+	assertTrue(t, l.HasNext())
+	assertToken(t, newRParenToken(), l)
+	assertFalse(t, l.HasNext())
+}
