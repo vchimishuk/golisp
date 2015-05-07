@@ -62,14 +62,14 @@ func TestSymbol(t *testing.T) {
 	p := New(lexer.New(testFile, "foo bar"))
 
 	assertTrue(t, p.HasNext())
-	assertNode(t, ast.NewSymbolNode("foo"), p)
+	assertNode(t, ast.NewSymbolNode("FOO"), p)
 	assertTrue(t, p.HasNext())
-	assertNode(t, ast.NewSymbolNode("bar"), p)
+	assertNode(t, ast.NewSymbolNode("BAR"), p)
 	assertFalse(t, p.HasNext())
 }
 
 func TestList(t *testing.T) {
-	text := "(foo 1 (2 3) 4)"
+	text := "(FOO 1 (2 3) 4)"
 	p := New(lexer.New(testFile, text))
 
 	assertTrue(t, p.HasNext())

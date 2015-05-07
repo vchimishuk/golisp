@@ -1,6 +1,9 @@
 package lexer
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 // TODO: Replace int numbers with math.big.Rat.
 
@@ -27,6 +30,8 @@ func newToken(class TokenClass, lexeme string, value interface{}) *Token {
 }
 
 func newSymbolToken(symbol string) *Token {
+	symbol = strings.ToUpper(symbol)
+
 	return newToken(ClassSymbol, symbol, symbol)
 }
 

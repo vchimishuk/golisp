@@ -78,8 +78,3 @@ func (n *Node) String() string {
 
 	return s
 }
-
-// (+ 1 2 3)		"+" node with three children
-// (define foo bar)	"define" node with two children
-// (1 2 3)		"1" node with two children
-// '(1 2 3)		"'" node with three childrem
