@@ -1,8 +1,6 @@
 package lexer
 
-import (
-	"strconv"
-)
+import "strconv"
 
 // TODO: Replace int numbers with math.big.Rat.
 
@@ -11,7 +9,6 @@ type TokenClass int
 const (
 	ClassSymbol TokenClass = iota
 	ClassComment
-	ClassEof
 	ClassLParen
 	ClassNumber
 	ClassQuote
@@ -25,10 +22,8 @@ type Token struct {
 	value  interface{}
 }
 
-var TokenEOF *Token = &Token{class: ClassString, lexeme: "EOF", value: nil}
-
 func newToken(class TokenClass, lexeme string, value interface{}) *Token {
-	return &Token{class: class, lexeme: lexeme}
+	return &Token{class: class, lexeme: lexeme, value: value}
 }
 
 func newSymbolToken(symbol string) *Token {
@@ -37,10 +32,6 @@ func newSymbolToken(symbol string) *Token {
 
 func newCommentToken(text string) *Token {
 	return newToken(ClassComment, text, text)
-}
-
-func newEofToken() *Token {
-	return newToken(ClassEof, "<eof>", nil)
 }
 
 func newLParenToken() *Token {
@@ -61,6 +52,18 @@ func newRParenToken() *Token {
 
 func newStringToken(str string) *Token {
 	return newToken(ClassString, str, str)
+}
+
+func (t *Token) Class() TokenClass {
+	return t.class
+}
+
+func (t *Token) StringValue() string {
+	return t.value.(string)
+}
+
+func (t *Token) IntValue() int {
+	return t.value.(int)
 }
 
 func (t *Token) String() string {

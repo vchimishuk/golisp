@@ -16,6 +16,12 @@ func New(file string, str string) *Lexer {
 	return &Lexer{file: file, reader: NewReader(str)}
 }
 
+func (l *Lexer) HasNext() bool {
+	l.skipWhitespaces()
+
+	return l.reader.HasNext()
+}
+
 func (l *Lexer) Token() (*Token, error) {
 	var r rune
 
@@ -24,11 +30,7 @@ func (l *Lexer) Token() (*Token, error) {
 		r, _, err = l.reader.ReadRune()
 	}
 	if err != nil {
-		if err == io.EOF {
-			return newEofToken(), nil
-		} else {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	var token *Token
